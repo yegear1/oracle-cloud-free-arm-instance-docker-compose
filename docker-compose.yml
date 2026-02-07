@@ -1,0 +1,11 @@
+services:
+  oracle-fisher:
+    build: .
+    container_name: oracle_fisher
+    restart: unless-stopped
+    volumes:
+      - ./.env:/app/.env
+      - ./oci_keys:/root/.oci
+    environment:
+      - PYTHONUNBUFFERED=1
+      - OCI_CLI_SUPPRESS_FILE_PERMISSIONS_WARNING=True

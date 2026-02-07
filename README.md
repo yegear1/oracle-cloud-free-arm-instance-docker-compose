@@ -1,64 +1,134 @@
-# Oracle Cloud Free ARM Instance
-A bash script to create an ARM instance on Oracle Cloud using their official OCI command line tool (CLI).
+# Oracle Cloud Free ARM Instance Creator (Dockerized)
 
-Oracle's free tier offers a generous ARM instance with 4 cors and 24gb of memory. Compared to most other services, that is a pretty good free plan to start with. The only problem is that the resources are very limited for users in the free plan. If you want to create an instance through their website, you usually run into an error: **Out of Capacity**. It means that there aren't enough free resources available. Instead of clicking endless times in the browser, we can automate the instance creation request.
+This project automates the creation of Always Free ARM instances (4 CPUs, 24GB RAM) on Oracle Cloud Infrastructure (OCI).
 
-**Inspired by** following PowerShell Windows solution: https://github.com/HotNoob/Oracle-Free-Arm-VPS-PS/tree/main
+Due to high demand, creating ARM instances often results in an Out of host capacity error. This script runs within a Docker container, attempting to create the instance every 60 seconds until a slot becomes available.
+Key Features of This Fork
 
-**Differences**:
-- I am using Bash and Linux
-- API key to authenticate without time limit as opposed to sessions limited to 1 hour
-- Script allows additional customizations like boot volume disk size and a SSH key to connect to the instance
-- Script was simplified and shows the whole error response (see [screenshot](screenshot.png))
-- More documentation and step by step explanation
+    Fully Dockerized: No need to install Python, OCI CLI, or any dependencies on your local machine.
 
-## Setup 
-1. Install the Oracle cloud CLI for Linux/Unix: https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/cliinstall.htm#InstallingCLI__linux_and_unix
-2. Login to your Oracle Cloud account in the browser: https://cloud.oracle.com/
-3. Go to Profile -> My Profile (User information OCID) and copy the **user ocid** somewhere
-4. Go to Profile -> Tenancy (Tenancy information OCID) and copy the value into the [.env file](.env) in the variable `TENANCY_ID`
-5. Go to Profile -> My profile -> API keys 
-   - Click on "Add API key" and download the private and public key
-6. Configure OCI by running following command in your terminal: `oci setup config`
-   - In the console prompt fill in the **user ocid (step 3**) and **tenancy ocid (step 4)**
-   - Select your region number (e.g. type in `24` for `eu-frankfurt-1`)
-   - Press `n` to use the existing key previously generated
-   - Provide the path to the private key file previously downloaded in step 5
-   - Config should be written now and we already added the API key in step 5
-   - **Note**: In case you are asked for a profile name: Type in "DEFAULT"
+    Automatic Windows CRLF Fix: The container automatically detects and fixes line-ending issues (CRLF) that commonly occur when editing configuration files on Windows, preventing "command not found" errors.
 
-7. Execute following command to get a list of possible images. Select one and copy it into the [.env](.env) variable `IMAGE_ID`:
-```
-oci compute image list --all -c "$TENANCY_ID" --auth api_key | jq -r '.data[] | select(.["display-name"] | contains("aarch64")) | "\(.["display-name"]): \(.id)"'
-```
-8. To get a list of possible Subnets, which you can save in the [.env](.env) variable `SUBNET_ID`:
-```
-oci network subnet list -c "$TENANCY_ID" --auth api_key | jq -r '.data[] | "\(.["display-name"]): \(.id)"'
-```
-9. Copy the availability domain into the [.env](.env) variable `AVAILABILITY_DOMAIN`:
-```
-oci iam availability-domain list -c "$TENANCY_ID" --auth api_key | jq -r '.data[].name'
-```
-10. Lastly change the variable `PATH_TO_PUBLIC_SSH_KEY` in the [.env](.env) file. That;s the path to a public SSH key on your machine to connect to the ARM instance once it's created
-   - Either download it from the Oracle Cloud instance creation website or [generate an ssh key yourself](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent#generating-a-new-ssh-key)  
-Finally, we are done with the setup (hardest part)
+    Organized Structure: All keys and configuration files are isolated within the oci_keys directory.
 
-## Customize (optional)
-Inside the file `/oracle_cloud_instance_creator.sh` you will find a section to change following parameters:
+Prerequisites
 
-CPU cores, memory in gb, boot volume disk space, path to public SSH key, interval of the creation request
+    An active account on Oracle Cloud.
 
-## Run script 
-- Open the terminal and go to the path of this repo
-- make sure the creator script can be executed 
-```
-chmod +x oracle_cloud_instance_creator.sh
-```
-- Run the script with:
-```
-./oracle_cloud_instance_creator.sh
-```
-Every minute (default `requestInterval`) the script will request an instance. The console will print a JSON `ServerError` response until the instance creation was successful. The creation could take days or in some cases weeks/months. You could run it on your machine, but I'd recommend to create a simple free AMD instance first and run it there in the background.
+    Docker and Docker Compose installed on your machine.
 
-Screenshot of how the error 500 response would look like. If you see something like this everything works as expected: 
-![screenshot](screenshot.png)
+Setup Instructions
+1. Prepare Credentials (oci_keys directory)
+
+All credentials must be placed inside the oci_keys directory located in the project root.
+
+Step A: Oracle API Key
+
+    Log in to the Oracle Cloud Console.
+
+    Navigate to My Profile -> API Keys -> Add API Key.
+
+    Select Generate API Key Pair and download the Private Key.
+
+    Save this file as oracle_api_key.pem inside the oci_keys folder.
+
+    Click Add.
+
+    Copy the content displayed in the "Configuration File Preview" text box.
+
+Step B: Config File
+
+    Create a file named config (with no file extension) inside the oci_keys folder.
+
+    Paste the content you copied from the Oracle Console into this file.
+
+    Important: You must edit the key_file path in this file to point to the internal container path. Change the line to look exactly like this:
+    Ini, TOML
+
+    key_file=/root/.oci/oracle_api_key.pem
+
+Step C: SSH Keys (For VPS Access)
+
+    Generate an SSH key pair inside the oci_keys folder. This key will be used to access your instance after it is created.
+    Bash
+
+    # Run this in your terminal
+    ssh-keygen -t rsa -b 4096 -f ./oci_keys/chave_vps_arm
+
+    Do not add a passphrase if you want the process to be fully automated without prompts (optional).
+
+    This will generate two files: chave_vps_arm (Private) and chave_vps_arm.pub (Public).
+
+2. Configure Environment Variables (.env)
+
+Edit the .env file in the project root with your specific Oracle Cloud IDs (OCIDs).
+
+    TENANCY_ID: Your Tenancy OCID.
+
+    AVAILABILITY_DOMAIN: The availability domain ID (e.g., Uocm:SA-VINHEDO-1-AD-1).
+
+    SUBNET_ID: The OCID of the Public Subnet where the instance should be created.
+
+    IMAGE_ID: The OCID of the ARM-compatible image (Ubuntu or Oracle Linux).
+
+    PATH_TO_PUBLIC_SSH_KEY: The internal path to your public key. Keep this as /root/.oci/chave_vps_arm.pub.
+
+Example .env file:
+Bash
+
+TENANCY_ID="ocid1.tenancy.oc1..aaaaaaa..."
+IMAGE_ID="ocid1.image.oc1.sa-vinhedo-1..."
+SUBNET_ID="ocid1.subnet.oc1.sa-vinhedo-1..."
+AVAILABILITY_DOMAIN="Uocm:SA-VINHEDO-1-AD-1"
+PATH_TO_PUBLIC_SSH_KEY="/root/.oci/chave_vps_arm.pub"
+
+# Instance Resources (Free Tier Limits)
+cpus=4
+ram=24
+bootVolume=100
+
+Usage
+Starting the Script
+
+Open your terminal in the project folder and run:
+Bash
+
+docker compose up -d --build
+
+Checking Progress
+
+To view the logs and verify the script is running:
+Bash
+
+docker compose logs -f
+
+What to expect in the logs:
+
+    ServiceError (500) / Out of host capacity: This is the expected behavior. It means the script is working correctly, but the region is currently full. It will retry automatically every 60 seconds.
+
+    Instance created: This indicates success.
+
+Stopping the Script
+
+Once the instance is created (check your Oracle Cloud Console or email), or if you wish to stop the process:
+Bash
+
+docker compose down
+
+File Structure
+Plaintext
+
+.
+├── docker-compose.yml       # Docker orchestration
+├── Dockerfile               # Image definition with CRLF fix
+├── .env                     # User configuration variables
+├── oracle_cloud_instance_creator.sh # Main script
+└── oci_keys/                # Mounted volume for credentials
+    ├── config               # OCI Config (edited to point to /root/.oci/)
+    ├── oracle_api_key.pem   # API Private Key
+    ├── chave_vps_arm        # SSH Private Key
+    └── chave_vps_arm.pub    # SSH Public Key
+
+Credits
+
+Based on the original work by futchas.

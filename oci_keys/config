@@ -1,0 +1,6 @@
+[DEFAULT]
+user=ocid1.user.oc1..***
+fingerprint=***
+tenancy=***
+region=***
+key_file=/root/.oci/oracle_api_key.pem

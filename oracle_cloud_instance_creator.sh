@@ -25,7 +25,7 @@ requestInterval=60 # seconds
 # VM params
 cpus=4 # max 4 cores
 ram=24 # max 24gb memory
-bootVolume=50 # disk size in gb
+bootVolume=150 # disk size in gb
 
 profile="DEFAULT"
 
@@ -45,6 +45,14 @@ while true; do
     --shape-config "{'ocpus':$cpus,'memoryInGBs':$ram}" \
     --boot-volume-size-in-gbs "$bootVolume" \
     --ssh-authorized-keys-file "$PATH_TO_PUBLIC_SSH_KEY"
+
+    # Check if the command was successful // from https://github.com/maindust/oracle-cloud-free-arm-instance
+    if [ $? -eq 0 ]; then
+        echo "Instance created successfully! Exiting."
+        break
+    else
+        echo "Instance creation failed. Retrying in $requestInterval seconds..."
+    fi
 
     sleep $requestInterval
 done
