@@ -49,6 +49,6 @@ O projeto foi migrado de Bash (`oci-cli`) para **Python puro utilizando o SDK of
 - [x] Implementar sistema flexível de notificação via webhook (WhatsApp, Discord, Telegram ou customizado).
 - [x] Integrar busca dinâmica de Availability Domains (ADs) via API OCI.
 - [x] Implementar suporte a múltiplas contas via `accounts.json` com fallback para `.env`.
-- [ ] Implementar `main.py` em Python puro com o SDK oficial `oci` e sessões persistentes.
-- [ ] Criar `requirements.txt` e refatorar `Dockerfile` e `docker-compose.yml` para execução Python pura.
-- [ ] Atualizar documentação no `README.md` e finalizar checklist no `AGENTS.md`.
+- [x] Implementar `main.py` em Python puro com o SDK oficial `oci` e sessões persistentes.
+- [x] Criar `requirements.txt` e refatorar `Dockerfile` e `docker-compose.yml` para execução Python pura.
+- [x] Atualizar documentação no `README.md` e finalizar checklist no `AGENTS.md`.

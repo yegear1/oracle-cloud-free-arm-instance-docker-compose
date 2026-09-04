@@ -1,16 +1,16 @@
 # Oracle Cloud Free ARM Instance Creator (Dockerized)
 
-This project automates the creation of Always Free ARM instances (up to 4 CPUs, 24GB RAM) on Oracle Cloud Infrastructure (OCI). It supports both **single-account** and **simultaneous multi-account** operation, automatically cycling through all available Availability Domains (ADs) until your instances are secured.
+This project automates the creation of Always Free ARM instances (up to 4 CPUs, 24GB RAM) on Oracle Cloud Infrastructure (OCI). Built with the **official Oracle OCI Python SDK**, it supports both **single-account** and **simultaneous multi-account** operation, maintaining persistent HTTP connections (Keep-Alive) to attempt instance creation in milliseconds across all Availability Domains (ADs).
 
-Due to high demand, creating ARM instances often results in an *Out of host capacity* error. This script runs within a Docker container, attempting to create the instance every 60 seconds (configurable) across all availability zones until slots become available.
+Due to high demand, creating ARM instances often results in an *Out of host capacity* error. This bot runs within a lightweight Docker container, continuously attempting to create the instance every 60 seconds (configurable) across all availability zones until slots become available.
 
 ### Key Features
+* **Pure Python with OCI SDK:** Uses the official `oci` Python SDK with persistent HTTP Keep-Alive sessions, reducing request latency to ~150ms (compared to ~2s per CLI spawn) to catch slots the second they open.
 * **Multi-Account & Single-Account Support:** Run for one account via `.env` or multiple accounts simultaneously via `accounts.json`.
-* **Dynamic Availability Domains:** Automatically lists and tries all ADs in your region (`oci iam availability-domain list`), greatly improving your chances of getting a machine.
-* **Instant Notifications:** Get notified on WhatsApp (Evolution API, Z-API, Baileys, etc.), Discord, Slack, or any custom webhook the second your instance is provisioned.
+* **Dynamic Availability Domains:** Automatically lists and tries all ADs in your region (`oci iam availability-domain list`), maximizing success probabilities.
+* **Instant Notifications:** Immediate alerts via WhatsApp (Evolution API, Z-API, Baileys, etc.), Discord, Slack, or any custom webhook.
 * **Configurable Hardware:** Easily adjust OCPUs, RAM, and boot volume limits per account or globally.
-* **Fully Dockerized:** Zero dependencies on host machine (Python and OCI CLI bundled in container).
-* **Automatic Windows CRLF Fix:** Detects and fixes carriage return issues (`\r\n`) from Windows editors.
+* **Native JSON & Cross-Platform:** Handles Windows/Linux line endings (`\r\n` vs `\n`) seamlessly without bash scripting dependencies.
 * **Organized Structure:** All keys and configuration files are isolated within the `oci_keys` directory.
 
 ---
@@ -174,15 +174,17 @@ docker compose down
 ```plaintext
 .
 ├── docker-compose.yml               # Docker Compose orchestration
-├── Dockerfile                       # Container image specification
-├── entrypoint.sh                    # Container startup and CRLF sanitizer
-├── oracle_cloud_instance_creator.sh # Main loop and OCI provisioning engine
+├── Dockerfile                       # Container image specification (Python 3.9-slim)
+├── requirements.txt                 # Python dependencies (oci, requests)
+├── main.py                          # Core Python engine with OCI SDK & Keep-Alive
 ├── accounts.json                    # Active multi-account configuration
 ├── accounts.json.example            # Example schema for multiple accounts
 ├── .env                             # Global variables and webhook settings
 ├── AGENTS.md                        # Context and guidelines for AI agents
+├── entrypoint.sh                    # Optional legacy container startup script
+├── oracle_cloud_instance_creator.sh # Optional legacy bash script
 └── oci_keys/                        # Mounted volume for credentials
-    ├── config                       # OCI CLI credentials (with profiles)
+    ├── config                       # OCI CLI/SDK credentials (with profiles)
     ├── oracle_api_key.pem           # API Private Key
     ├── chave_vps_arm                # SSH Private Key
     └── chave_vps_arm.pub            # SSH Public Key
