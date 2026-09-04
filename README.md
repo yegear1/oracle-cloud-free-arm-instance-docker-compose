@@ -88,6 +88,9 @@ IMAGE_ID="ocid1.image.oc1.sa-saopaulo-1..."
 SUBNET_ID="ocid1.subnet.oc1.sa-saopaulo-1..."
 PATH_TO_PUBLIC_SSH_KEY="/root/.oci/chave_vps_arm.pub"
 
+# Optional fallback (ADs are discovered automatically via OCI API)
+# AVAILABILITY_DOMAIN="Uocm:SA-SAOPAULO-1-AD-1"
+
 # Hardware resources (Always Free Tier limits)
 cpus=4
 ram=24
@@ -158,15 +161,22 @@ docker compose logs -f
 ```
 
 **Log indicators:**
-* `[*] Processando Perfil: [NOME]`: Current account being processed.
-* `-> Tentando no AD: [AD_NAME]`: Dynamic attempt in specified Availability Domain.
-* `[X] Falha no AD ... (Sem capacidade no momento)`: Expected behavior when region is full. It retries automatically.
-* `[SUCESSO] Instância criada com sucesso`: Success! Instance provisioned and notification dispatched.
+* `[Ciclo #X] [Conta: PROFILE] Tentando no AD: AD_NAME`: Real-time creation attempt in specified Availability Domain.
+* `[X] Sem capacidade no momento no AD 'AD_NAME'`: Expected behavior when host capacity is full. Retries automatically on next cycle.
+* `[!] Rate Limit atingido (HTTP 429 Too Many Requests)`: Rate limit detected; bot pauses safely until next cycle.
+* `🎉 [SUCESSO] Instância criada com sucesso para a conta 'PROFILE' no AD 'AD_NAME'! ID: ocid1...`: Instance provisioned and webhook alert dispatched!
 
 ### Stopping the Script
 ```bash
 docker compose down
 ```
+
+---
+
+### Alternative Runtimes (Python & Bash)
+The container defaults to the compiled, high-performance Go engine. If you wish to run the alternative implementations:
+* **Python (`main.py`):** Change `CMD` in [Dockerfile](file:///home/yegear/github/oracle-cloud-free-arm-instance-docker-compose/Dockerfile) to `CMD ["python", "-u", "main.py"]` (or run locally via `pip install -r requirements.txt && python main.py`).
+* **Bash (`oracle_cloud_instance_creator.sh`):** Change `CMD` in [Dockerfile](file:///home/yegear/github/oracle-cloud-free-arm-instance-docker-compose/Dockerfile) to `CMD ["./entrypoint.sh"]`.
 
 ---
 
