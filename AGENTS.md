@@ -52,6 +52,6 @@ O projeto evoluiu para o **ápice de eficiência e performance**, implementado e
 - [x] Integrar busca dinâmica de Availability Domains (ADs) via API OCI.
 - [x] Implementar suporte a múltiplas contas via `accounts.json` com fallback para `.env`.
 - [x] Implementar `main.py` em Python puro com o SDK oficial `oci` e sessões persistentes.
-- [ ] Implementar `main.go` e `go.mod` com o SDK oficial `oci-go-sdk` da Oracle.
-- [ ] Configurar build multi-stage no `Dockerfile` para gerar imagem Go ultraleve (~20MB).
-- [ ] Atualizar documentação no `README.md` e finalizar checklist no `AGENTS.md`.
+- [x] Implementar `main.go` e `go.mod` com o SDK oficial `oci-go-sdk` da Oracle.
+- [x] Configurar build multi-stage no `Dockerfile` para gerar imagem Go ultraleve (~20MB).
+- [x] Atualizar documentação no `README.md` e finalizar checklist no `AGENTS.md`.
