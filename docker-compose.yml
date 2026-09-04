@@ -5,6 +5,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./.env:/app/.env
+      - ./accounts.json:/app/accounts.json
       - ./oci_keys:/root/.oci
     environment:
       - PYTHONUNBUFFERED=1

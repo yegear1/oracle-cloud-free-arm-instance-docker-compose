@@ -1,0 +1,24 @@
+[
+  {
+    "profile": "ACCOUNT1",
+    "tenancy_id": "ocid1.tenancy.oc1..aaaaaaa...",
+    "image_id": "ocid1.image.oc1.sa-saopaulo-1...",
+    "subnet_id": "ocid1.subnet.oc1.sa-saopaulo-1...",
+    "ssh_key": "/root/.oci/chave_vps_arm.pub",
+    "cpus": 4,
+    "ram": 24,
+    "boot_volume": 100,
+    "display_name": "arm-instance-conta1"
+  },
+  {
+    "profile": "ACCOUNT2",
+    "tenancy_id": "ocid1.tenancy.oc1..bbbbbbb...",
+    "image_id": "ocid1.image.oc1.sa-vinhedo-1...",
+    "subnet_id": "ocid1.subnet.oc1.sa-vinhedo-1...",
+    "ssh_key": "/root/.oci/chave_vps_arm.pub",
+    "cpus": 4,
+    "ram": 24,
+    "boot_volume": 100,
+    "display_name": "arm-instance-conta2"
+  }
+]
