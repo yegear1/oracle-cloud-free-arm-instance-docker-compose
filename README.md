@@ -58,6 +58,20 @@ Edit the `.env` file in the project root with your specific Oracle Cloud IDs (OC
 * `IMAGE_ID`: The OCID of the ARM-compatible image (Ubuntu or Oracle Linux).
 * `PATH_TO_PUBLIC_SSH_KEY`: The internal path to your public key. Keep this as `/root/.oci/chave_vps_arm.pub`.
 
+#### Hardware & Execution Settings (Optional)
+* `cpus`: Number of OCPUs (default: `4`, max Always Free: 4).
+* `ram`: RAM in GB (default: `24`, max Always Free: 24).
+* `bootVolume`: Boot disk size in GB (default: `100`, max Always Free: 200).
+* `requestInterval`: Delay in seconds between attempts (default: `60`).
+* `DISPLAY_NAME`: Instance display name (default: `big-arm`).
+
+#### Instant Notification via Webhook (Optional)
+Receive immediate alerts when your instance is created (compatible with WhatsApp APIs, Discord, Slack, or custom webhooks):
+* `NOTIFICATION_WEBHOOK_URL`: Your webhook or API URL.
+* `NOTIFICATION_WEBHOOK_METHOD`: HTTP method (`POST`, `GET`, etc., default: `POST`).
+* `NOTIFICATION_WEBHOOK_HEADERS`: Semicolon-separated HTTP headers (e.g. `Content-Type: application/json; apikey: your-token`).
+* `NOTIFICATION_WEBHOOK_BODY`: Custom JSON payload body. Use `{message}` as placeholder for the status message.
+
 **Example `.env` file:**
 
 ```bash
@@ -71,6 +85,15 @@ PATH_TO_PUBLIC_SSH_KEY="/root/.oci/chave_vps_arm.pub"
 cpus=4
 ram=24
 bootVolume=100
+requestInterval=60
+
+# WhatsApp API Example (Evolution API, Z-API, Baileys, etc.)
+# NOTIFICATION_WEBHOOK_URL="https://api.example.com/message/sendText/my-instance"
+# NOTIFICATION_WEBHOOK_HEADERS="Content-Type: application/json; apikey: my-secret-api-key"
+# NOTIFICATION_WEBHOOK_BODY='{"number": "5511999999999", "text": "{message}"}'
+
+# Discord Webhook Example
+# NOTIFICATION_WEBHOOK_URL="https://discord.com/api/webhooks/xxxx/yyyy"
 ```
 
 ---

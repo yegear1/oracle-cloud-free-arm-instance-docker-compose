@@ -36,8 +36,8 @@ Este projeto automatiza o provisionamento contínuo de instâncias **Always Free
 ## 3. Tasks do Projeto
 
 - [x] Inicializar documentação `AGENTS.md` com contexto e diretrizes.
-- [ ] Corrigir erro de sintaxe no `.env` (aspas duplicadas).
-- [ ] Parametrizar recursos de hardware (`cpus`, `ram`, `bootVolume`) e intervalo a partir do `.env` com fallbacks.
-- [ ] Adicionar timestamp e contador de tentativas nos logs do script.
-- [ ] Implementar sistema flexível de notificação via webhook (WhatsApp, Discord, Telegram ou customizado).
-- [ ] Atualizar `.env` e `README.md` documentando todas as novas opções de configuração.
+- [x] Corrigir erro de sintaxe no `.env` (aspas duplicadas).
+- [x] Parametrizar recursos de hardware (`cpus`, `ram`, `bootVolume`) e intervalo a partir do `.env` com fallbacks.
+- [x] Adicionar timestamp e contador de tentativas nos logs do script.
+- [x] Implementar sistema flexível de notificação via webhook (WhatsApp, Discord, Telegram ou customizado).
+- [x] Atualizar `.env` e `README.md` documentando todas as novas opções de configuração.
