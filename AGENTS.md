@@ -47,8 +47,8 @@ Este projeto automatiza o provisionamento contínuo de instâncias **Always Free
 - [x] Adicionar timestamp e contador de tentativas nos logs do script.
 - [x] Implementar sistema flexível de notificação via webhook (WhatsApp, Discord, Telegram ou customizado).
 - [x] Atualizar `.env` e `README.md` documentando todas as novas opções de configuração.
-- [ ] Refatorar Dockerfile e criar `entrypoint.sh` dedicado para inicialização e higienização de CRLF.
-- [ ] Atualizar `docker-compose.yml` para mapear `accounts.json` e `.env`.
-- [ ] Criar `accounts.json.example` e padronizar chaves SSH.
-- [ ] Implementar suporte a múltiplas contas e busca dinâmica de Availability Domains (ADs) no script principal.
-- [ ] Atualizar documentação no `README.md` e marcar tasks finalizadas no `AGENTS.md`.
+- [x] Refatorar Dockerfile e criar `entrypoint.sh` dedicado para inicialização e higienização de CRLF.
+- [x] Atualizar `docker-compose.yml` para mapear `accounts.json` e `.env`.
+- [x] Criar `accounts.json.example` e padronizar chaves SSH.
+- [x] Implementar suporte a múltiplas contas e busca dinâmica de Availability Domains (ADs) no script principal.
+- [x] Atualizar documentação no `README.md` e marcar tasks finalizadas no `AGENTS.md`.
