@@ -81,7 +81,11 @@ ssh-keygen -t rsa -b 4096 -f ./oci_keys/chave_vps_arm
 You can configure the project in one of two modes:
 
 #### Option A: Single Account (via `.env`)
-Edit the `.env` file in the project root:
+Copy `.env.example` to `.env` and edit with your specific Oracle Cloud IDs (OCIDs):
+```bash
+cp .env.example .env
+```
+
 ```bash
 TENANCY_ID="ocid1.tenancy.oc1..aaaaaaa..."
 IMAGE_ID="ocid1.image.oc1.sa-saopaulo-1..."
@@ -99,7 +103,10 @@ requestInterval=60
 ```
 
 #### Option B: Multiple Accounts (via `accounts.json`)
-Copy `accounts.json.example` to `accounts.json` and fill with your accounts:
+Copy `accounts.json.example` to `accounts.json` and configure your accounts list:
+```bash
+cp accounts.json.example accounts.json
+```
 ```json
 [
   {
@@ -173,13 +180,6 @@ docker compose down
 
 ---
 
-### Alternative Runtimes (Python & Bash)
-The root container defaults to the compiled, high-performance Go engine. Alternative runtimes are neatly organized and isolated in the `runtimes/` directory:
-* **Python (`runtimes/python/`):** Built with the official `oci` Python SDK. Run with `docker build -t oracle-fisher-py runtimes/python/` or locally via `cd runtimes/python && pip install -r requirements.txt && python main.py`.
-* **Bash (`runtimes/bash/`):** Legacy implementation with `oci-cli`. Run with `docker build -t oracle-fisher-bash runtimes/bash/`.
-
----
-
 ## File Structure
 
 ```plaintext
@@ -188,9 +188,9 @@ The root container defaults to the compiled, high-performance Go engine. Alterna
 ├── Dockerfile               # Multi-stage production Dockerfile (Go static binary -> ~20MB image)
 ├── go.mod                   # Go module definition (oci-go-sdk v65)
 ├── main.go                  # Core Go engine with OCI SDK & Keep-Alive
-├── accounts.json            # Active multi-account configuration
-├── accounts.json.example    # Example schema for multiple accounts
-├── .env                     # Global variables and webhook settings
+├── accounts.json.example    # Multi-account configuration template
+├── .env.example             # Environment variables and webhook settings template
+├── .gitignore               # Ignores active .env, accounts.json, keys and build artifacts
 ├── AGENTS.md                # Context and guidelines for AI agents
 ├── LICENSE                  # License file
 ├── oci_keys/                # Mounted volume for credentials
@@ -198,17 +198,8 @@ The root container defaults to the compiled, high-performance Go engine. Alterna
 │   ├── oracle_api_key.pem   # API Private Key
 │   ├── chave_vps_arm        # SSH Private Key
 │   └── chave_vps_arm.pub    # SSH Public Key
-├── assets/                  # Media & screenshots
-│   └── screenshot.png
-└── runtimes/                # Alternative runtime implementations
-    ├── python/              # Python implementation (oci SDK)
-    │   ├── Dockerfile
-    │   ├── main.py
-    │   └── requirements.txt
-    └── bash/                # Legacy Bash implementation (oci-cli)
-        ├── Dockerfile
-        ├── entrypoint.sh
-        └── oracle_cloud_instance_creator.sh
+└── assets/                  # Media & screenshots
+    └── screenshot.png
 ```
 
 ## Credits

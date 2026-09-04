@@ -46,6 +46,9 @@ var (
 
 // loadEnv lê o arquivo .env e carrega as variáveis de ambiente sem dependências externas.
 func loadEnv(path string) {
+	if info, err := os.Stat(path); err != nil || info.IsDir() {
+		return
+	}
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return
@@ -172,11 +175,13 @@ func getSSHKeyContent(path string) string {
 
 // loadAccounts carrega contas a partir de accounts.json ou do .env como fallback.
 func loadAccounts() []AccountConfig {
-	if data, err := os.ReadFile("accounts.json"); err == nil {
-		var accounts []AccountConfig
-		if err := json.Unmarshal(data, &accounts); err == nil && len(accounts) > 0 {
-			log.Printf("--- Modo Multi-Contas Ativado (%d conta(s) em accounts.json) ---", len(accounts))
-			return accounts
+	if info, err := os.Stat("accounts.json"); err == nil && !info.IsDir() {
+		if data, err := os.ReadFile("accounts.json"); err == nil {
+			var accounts []AccountConfig
+			if err := json.Unmarshal(data, &accounts); err == nil && len(accounts) > 0 {
+				log.Printf("--- Modo Multi-Contas Ativado (%d conta(s) em accounts.json) ---", len(accounts))
+				return accounts
+			}
 		}
 	}
 

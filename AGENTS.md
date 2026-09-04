@@ -25,12 +25,10 @@ O projeto evoluiu para o **ápice de eficiência e performance**, implementado e
 - **`go.mod`**: Gerenciamento de dependências Go (`github.com/oracle/oci-go-sdk/v65`).
 - **`Dockerfile`**: Build multi-stage compilando o binário estático em `golang:1.22-alpine` e gerando imagem final ultraleve em `alpine:3.20`.
 - **`docker-compose.yml`**: Orquestra o container `oracle_fisher`, montando `.env`, `accounts.json` e o diretório de credenciais `./oci_keys` em `/root/.oci`.
-- **`accounts.json`**: Lista de contas OCI para operação multi-contas.
-- **`accounts.json.example`**: Modelo de exemplo para configuração multi-contas.
-- **`.env`**: Configurações gerais (hardware, intervalo, webhooks de notificação e credenciais de conta única).
+- **`accounts.json.example`**: Modelo de exemplo para configuração multi-contas (copiar para `accounts.json`).
+- **`.env.example`**: Modelo de configuração geral e webhooks (copiar para `.env`).
 - **`oci_keys/`**: Diretório montado contendo `config`, chaves `.pem` de API e chaves SSH.
 - **`assets/`**: Imagens e capturas de tela.
-- **`runtimes/`**: Implementações alternativas isoladas (`runtimes/python/` e `runtimes/bash/`).
 
 ### Comandos de Operação
 - Iniciar em background: `docker compose up -d --build`
@@ -56,3 +54,4 @@ O projeto evoluiu para o **ápice de eficiência e performance**, implementado e
 - [x] Implementar `main.go` e `go.mod` com o SDK oficial `oci-go-sdk` da Oracle.
 - [x] Configurar build multi-stage no `Dockerfile` para gerar imagem Go ultraleve (~20MB).
 - [x] Atualizar documentação no `README.md` e finalizar checklist no `AGENTS.md`.
+- [x] Unificar repositório 100% em Go, remover runtimes legados e proteger secrets no `.gitignore`.
