@@ -29,7 +29,8 @@ O projeto evoluiu para o **ápice de eficiência e performance**, implementado e
 - **`accounts.json.example`**: Modelo de exemplo para configuração multi-contas.
 - **`.env`**: Configurações gerais (hardware, intervalo, webhooks de notificação e credenciais de conta única).
 - **`oci_keys/`**: Diretório montado contendo `config`, chaves `.pem` de API e chaves SSH.
-- *(Legados preservados como alternativas: `main.py` e `oracle_cloud_instance_creator.sh`).*
+- **`assets/`**: Imagens e capturas de tela.
+- **`runtimes/`**: Implementações alternativas isoladas (`runtimes/python/` e `runtimes/bash/`).
 
 ### Comandos de Operação
 - Iniciar em background: `docker compose up -d --build`

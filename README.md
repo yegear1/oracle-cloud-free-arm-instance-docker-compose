@@ -174,9 +174,9 @@ docker compose down
 ---
 
 ### Alternative Runtimes (Python & Bash)
-The container defaults to the compiled, high-performance Go engine. If you wish to run the alternative implementations:
-* **Python (`main.py`):** Change `CMD` in [Dockerfile](file:///home/yegear/github/oracle-cloud-free-arm-instance-docker-compose/Dockerfile) to `CMD ["python", "-u", "main.py"]` (or run locally via `pip install -r requirements.txt && python main.py`).
-* **Bash (`oracle_cloud_instance_creator.sh`):** Change `CMD` in [Dockerfile](file:///home/yegear/github/oracle-cloud-free-arm-instance-docker-compose/Dockerfile) to `CMD ["./entrypoint.sh"]`.
+The root container defaults to the compiled, high-performance Go engine. Alternative runtimes are neatly organized and isolated in the `runtimes/` directory:
+* **Python (`runtimes/python/`):** Built with the official `oci` Python SDK. Run with `docker build -t oracle-fisher-py runtimes/python/` or locally via `cd runtimes/python && pip install -r requirements.txt && python main.py`.
+* **Bash (`runtimes/bash/`):** Legacy implementation with `oci-cli`. Run with `docker build -t oracle-fisher-bash runtimes/bash/`.
 
 ---
 
@@ -184,23 +184,31 @@ The container defaults to the compiled, high-performance Go engine. If you wish 
 
 ```plaintext
 .
-├── docker-compose.yml               # Docker Compose orchestration
-├── Dockerfile                       # Multi-stage Dockerfile (golang builder -> alpine ~20MB)
-├── go.mod                           # Go dependencies (oci-go-sdk v65)
-├── main.go                          # Core Go engine with OCI SDK & Keep-Alive
-├── accounts.json                    # Active multi-account configuration
-├── accounts.json.example            # Example schema for multiple accounts
-├── .env                             # Global variables and webhook settings
-├── AGENTS.md                        # Context and guidelines for AI agents
-├── main.py                          # Alternative Python implementation
-├── requirements.txt                 # Python dependencies
-├── entrypoint.sh                    # Legacy container startup script
-├── oracle_cloud_instance_creator.sh # Legacy bash script
-└── oci_keys/                        # Mounted volume for credentials
-    ├── config                       # OCI CLI/SDK credentials (with profiles)
-    ├── oracle_api_key.pem           # API Private Key
-    ├── chave_vps_arm                # SSH Private Key
-    └── chave_vps_arm.pub            # SSH Public Key
+├── docker-compose.yml       # Docker Compose orchestration
+├── Dockerfile               # Multi-stage production Dockerfile (Go static binary -> ~20MB image)
+├── go.mod                   # Go module definition (oci-go-sdk v65)
+├── main.go                  # Core Go engine with OCI SDK & Keep-Alive
+├── accounts.json            # Active multi-account configuration
+├── accounts.json.example    # Example schema for multiple accounts
+├── .env                     # Global variables and webhook settings
+├── AGENTS.md                # Context and guidelines for AI agents
+├── LICENSE                  # License file
+├── oci_keys/                # Mounted volume for credentials
+│   ├── config               # OCI CLI/SDK credentials (with profiles)
+│   ├── oracle_api_key.pem   # API Private Key
+│   ├── chave_vps_arm        # SSH Private Key
+│   └── chave_vps_arm.pub    # SSH Public Key
+├── assets/                  # Media & screenshots
+│   └── screenshot.png
+└── runtimes/                # Alternative runtime implementations
+    ├── python/              # Python implementation (oci SDK)
+    │   ├── Dockerfile
+    │   ├── main.py
+    │   └── requirements.txt
+    └── bash/                # Legacy Bash implementation (oci-cli)
+        ├── Dockerfile
+        ├── entrypoint.sh
+        └── oracle_cloud_instance_creator.sh
 ```
 
 ## Credits

@@ -10,7 +10,7 @@ RUN apk add --no-cache git ca-certificates
 COPY go.mod go.sum* ./
 RUN go mod download || true
 
-COPY . .
+COPY main.go ./
 
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o oracle-fisher main.go
 
@@ -23,11 +23,8 @@ RUN apk add --no-cache ca-certificates tzdata
 
 WORKDIR /app
 
-# Copia o binário compilado estático
+# Copia o binário estático Go compilado
 COPY --from=builder /build/oracle-fisher .
-
-# Mantém scripts legados (Python e Bash) preservados para consulta
-COPY main.py requirements.txt oracle_cloud_instance_creator.sh entrypoint.sh ./
 
 # Executa o binário nativo em Go
 CMD ["/app/oracle-fisher"]
