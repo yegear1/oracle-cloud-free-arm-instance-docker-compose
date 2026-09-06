@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -98,6 +99,10 @@ func getEnvInt(key string, defaultVal int64) int64 {
 	return defaultVal
 }
 
+func unescapeQuotes(s string) string {
+	return strings.ReplaceAll(s, `\"`, `"`)
+}
+
 // sendNotification dispara notificações via webhook HTTP (WhatsApp API, Discord, Slack, etc.).
 func sendNotification(msg string) {
 	webhookURL := getEnv("NOTIFICATION_WEBHOOK_URL", "")
@@ -107,14 +112,15 @@ func sendNotification(msg string) {
 
 	log.Println("[Webhook] Enviando notificação...")
 	method := strings.ToUpper(getEnv("NOTIFICATION_WEBHOOK_METHOD", "POST"))
-	headersStr := getEnv("NOTIFICATION_WEBHOOK_HEADERS", "")
-	bodyTemplate := getEnv("NOTIFICATION_WEBHOOK_BODY", "")
+	headersStr := unescapeQuotes(getEnv("NOTIFICATION_WEBHOOK_HEADERS", ""))
+	bodyTemplate := unescapeQuotes(getEnv("NOTIFICATION_WEBHOOK_BODY", ""))
 
 	var bodyBytes []byte
 	if bodyTemplate != "" {
 		escapedMsg := strings.ReplaceAll(msg, "\n", "\\n")
 		escapedMsg = strings.ReplaceAll(escapedMsg, "\"", "\\\"")
-		bodyStr := strings.ReplaceAll(bodyTemplate, "{message}", escapedMsg)
+		bodyStr := strings.ReplaceAll(bodyTemplate, "{{message}}", escapedMsg)
+		bodyStr = strings.ReplaceAll(bodyStr, "{message}", escapedMsg)
 		bodyBytes = []byte(bodyStr)
 	} else {
 		payload := map[string]string{
@@ -133,10 +139,17 @@ func sendNotification(msg string) {
 
 	req.Header.Set("Content-Type", "application/json")
 	if headersStr != "" {
-		for _, h := range strings.Split(headersStr, ";") {
-			parts := strings.SplitN(h, ":", 2)
-			if len(parts) == 2 {
-				req.Header.Set(strings.TrimSpace(parts[0]), strings.TrimSpace(parts[1]))
+		var headerMap map[string]string
+		if err := json.Unmarshal([]byte(headersStr), &headerMap); err == nil {
+			for k, v := range headerMap {
+				req.Header.Set(k, v)
+			}
+		} else {
+			for _, h := range strings.Split(headersStr, ";") {
+				parts := strings.SplitN(h, ":", 2)
+				if len(parts) == 2 {
+					req.Header.Set(strings.TrimSpace(parts[0]), strings.TrimSpace(parts[1]))
+				}
 			}
 		}
 	}
@@ -149,7 +162,12 @@ func sendNotification(msg string) {
 	}
 	defer resp.Body.Close()
 
-	log.Printf("[Webhook] Notificação disparada com sucesso (HTTP %d).", resp.StatusCode)
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		log.Printf("[Webhook] Notificação disparada com sucesso (HTTP %d).", resp.StatusCode)
+	} else {
+		bodySnippet, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
+		log.Printf("[Webhook] Alerta: Webhook retornou status HTTP %d. Resposta: %s", resp.StatusCode, strings.TrimSpace(string(bodySnippet)))
+	}
 }
 
 // getSSHKeyContent localiza e lê a chave SSH pública.
