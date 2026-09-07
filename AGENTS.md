@@ -6,9 +6,7 @@ Guia de contexto e diretrizes para agentes de IA que atuarem neste repositório.
 
 ## 1. Visão Geral do Projeto
 
-Este projeto automatiza o provisionamento contínuo de instâncias **Always Free ARM** (`VM.Standard.A1.Flex` de até **2 OCPUs e 12 GB RAM** por tenancy) na Oracle Cloud Infrastructure (OCI).
-
-> **Limite Always Free (2026):** a Oracle reduziu o Ampere A1 de 4 OCPUs / 24 GB para 2 OCPUs / 12 GB. Instâncias acima do novo teto devem ser redimensionadas ou recriadas; a Oracle passa a encerrar o que exceder o entitlement. Defaults do projeto (`cpus=2`, `ram=12`) seguem esse teto. Tenancies pagas (PAYG) podem ter cota maior — confirme no console/suporte antes de pedir 4/24. 
+Este projeto automatiza o provisionamento contínuo de instâncias **Always Free ARM** (`VM.Standard.A1.Flex` de até 2 OCPUs e 12 GB RAM) na Oracle Cloud Infrastructure (OCI).
 
 O projeto evoluiu para o **ápice de eficiência e performance**, implementado em **Go (Golang)** utilizando o SDK oficial da Oracle (`github.com/oracle/oci-go-sdk/v65`):
 - **Pegada Mínima de Recursos:** Imagem Docker de apenas ~20MB e consumo de memória RAM de míseros ~6MB (mais de 25x menor e 10x mais leve que soluções convencionais).
@@ -61,4 +59,3 @@ Ao emitir ou alterar logs, seguir a skill `victorialogs-integration` em `ye-sand
 - [x] Atualizar documentação no `README.md` e finalizar checklist no `AGENTS.md`.
 - [x] Unificar repositório 100% em Go, remover runtimes legados e proteger secrets no `.gitignore`.
 - [x] Emitir logs de produção em NDJSON (`log/slog`) alinhados à skill `victorialogs-integration`.
-- [x] Alinhar defaults Always Free A1 a 2 OCPUs / 12 GB após o corte de limite da Oracle.

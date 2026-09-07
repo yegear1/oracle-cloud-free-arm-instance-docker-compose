@@ -20,9 +20,8 @@ import (
 )
 
 const (
-	// Alinhado a container_name no docker-compose (stream field no Vector).
-	serviceName = "oracle_fisher"
-	appName     = "oracle_fisher"
+	serviceName = "oracle-fisher"
+	appName     = "oracle-fisher"
 )
 
 // AccountConfig representa os parâmetros de uma conta OCI.
@@ -154,7 +153,7 @@ func initLogger() {
 			case slog.TimeKey:
 				a.Key = "timestamp"
 				if t, ok := a.Value.Any().(time.Time); ok {
-					a.Value = slog.StringValue(t.UTC().Format("2006-01-02T15:04:05.000000000Z"))
+					a.Value = slog.StringValue(t.UTC().Format("2006-01-02T15:04:05.000Z"))
 				}
 			}
 			return a
@@ -494,9 +493,15 @@ func main() {
 						instanceID = *resp.Instance.Id
 					}
 					slog.Info("Instância criada com sucesso",
+						"event", "instance_created",
+						"outcome", "success",
 						"profile", profile,
 						"availability_domain", ad,
+						"display_name", displayName,
 						"instance_id", instanceID,
+						"cpus", cpus,
+						"ram_gb", ram,
+						"boot_volume_gb", bootVolume,
 					)
 					successAccounts[profile] = true
 					sendNotification(fmt.Sprintf(
@@ -541,7 +546,11 @@ func main() {
 		}
 
 		if allDone {
-			slog.Info("Todas as instâncias solicitadas foram criadas com sucesso")
+			slog.Info("Todas as instâncias solicitadas foram criadas com sucesso",
+				"event", "all_instances_created",
+				"outcome", "success",
+				"accounts_count", len(accounts),
+			)
 			sendNotification("🏁 Todas as instâncias ARM solicitadas foram criadas com sucesso na Oracle Cloud!")
 			os.Exit(0)
 		}
