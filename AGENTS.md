@@ -30,6 +30,9 @@ O projeto evoluiu para o **ápice de eficiência e performance**, implementado e
 - **`oci_keys/`**: Diretório montado contendo `config`, chaves `.pem` de API e chaves SSH.
 - **`assets/`**: Imagens e capturas de tela.
 
+### Logging (produção)
+Ao emitir ou alterar logs, seguir a skill `victorialogs-integration` em `ye-sandbox/infra-victoria-logs/skills/victorialogs-integration` (descoberta local via `~/.cursor/skills/victorialogs-integration`). Não copiar essa skill para este repositório.
+
 ### Comandos de Operação
 - Iniciar em background: `docker compose up -d --build`
 - Monitorar logs em tempo real: `docker compose logs -f`
@@ -55,3 +58,4 @@ O projeto evoluiu para o **ápice de eficiência e performance**, implementado e
 - [x] Configurar build multi-stage no `Dockerfile` para gerar imagem Go ultraleve (~20MB).
 - [x] Atualizar documentação no `README.md` e finalizar checklist no `AGENTS.md`.
 - [x] Unificar repositório 100% em Go, remover runtimes legados e proteger secrets no `.gitignore`.
+- [x] Emitir logs de produção em NDJSON (`log/slog`) alinhados à skill `victorialogs-integration`.

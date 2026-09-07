@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -16,6 +17,11 @@ import (
 	"github.com/oracle/oci-go-sdk/v65/common"
 	"github.com/oracle/oci-go-sdk/v65/core"
 	"github.com/oracle/oci-go-sdk/v65/identity"
+)
+
+const (
+	serviceName = "oracle-fisher"
+	appName     = "oracle-fisher"
 )
 
 // AccountConfig representa os parâmetros de uma conta OCI.
@@ -103,6 +109,70 @@ func unescapeQuotes(s string) string {
 	return strings.ReplaceAll(s, `\"`, `"`)
 }
 
+func initLogger() {
+	env := getEnv("APP_ENV", getEnv("ENV", "production"))
+	if env != "development" {
+		env = "production"
+	}
+
+	level := slog.LevelInfo
+	switch strings.ToLower(getEnv("LOG_LEVEL", "info")) {
+	case "debug":
+		level = slog.LevelDebug
+	case "warn", "warning":
+		level = slog.LevelWarn
+	case "error":
+		level = slog.LevelError
+	}
+
+	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: level,
+		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+			if len(groups) > 0 {
+				return a
+			}
+			switch a.Key {
+			case slog.MessageKey:
+				a.Key = "message"
+			case slog.LevelKey:
+				a.Key = "level"
+				if lvl, ok := a.Value.Any().(slog.Level); ok {
+					name := "info"
+					switch {
+					case lvl >= slog.LevelError:
+						name = "error"
+					case lvl >= slog.LevelWarn:
+						name = "warn"
+					case lvl >= slog.LevelInfo:
+						name = "info"
+					default:
+						name = "debug"
+					}
+					a.Value = slog.StringValue(name)
+				}
+			case slog.TimeKey:
+				a.Key = "timestamp"
+				if t, ok := a.Value.Any().(time.Time); ok {
+					a.Value = slog.StringValue(t.UTC().Format("2006-01-02T15:04:05.000Z"))
+				}
+			}
+			return a
+		},
+	}).WithAttrs([]slog.Attr{
+		slog.String("service", serviceName),
+		slog.String("app", appName),
+		slog.String("env", env),
+	})
+	slog.SetDefault(slog.New(handler))
+}
+
+func slogError(msg string, err error, args ...any) {
+	if err != nil {
+		args = append(args, "error", err.Error(), "stack_trace", strings.TrimSpace(string(debug.Stack())))
+	}
+	slog.Error(msg, args...)
+}
+
 // sendNotification dispara notificações via webhook HTTP (WhatsApp API, Discord, Slack, etc.).
 func sendNotification(msg string) {
 	webhookURL := getEnv("NOTIFICATION_WEBHOOK_URL", "")
@@ -110,7 +180,7 @@ func sendNotification(msg string) {
 		return
 	}
 
-	log.Println("[Webhook] Enviando notificação...")
+	slog.Info("Enviando notificação via webhook")
 	method := strings.ToUpper(getEnv("NOTIFICATION_WEBHOOK_METHOD", "POST"))
 	headersStr := unescapeQuotes(getEnv("NOTIFICATION_WEBHOOK_HEADERS", ""))
 	bodyTemplate := unescapeQuotes(getEnv("NOTIFICATION_WEBHOOK_BODY", ""))
@@ -133,7 +203,7 @@ func sendNotification(msg string) {
 
 	req, err := http.NewRequest(method, webhookURL, strings.NewReader(string(bodyBytes)))
 	if err != nil {
-		log.Printf("[Webhook] Erro ao instanciar requisição: %v", err)
+		slogError("Erro ao instanciar requisição de webhook", err)
 		return
 	}
 
@@ -157,16 +227,19 @@ func sendNotification(msg string) {
 	client := &http.Client{Timeout: 15 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Printf("[Webhook] Falha ao enviar notificação: %v", err)
+		slogError("Falha ao enviar notificação via webhook", err)
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		log.Printf("[Webhook] Notificação disparada com sucesso (HTTP %d).", resp.StatusCode)
+		slog.Info("Notificação disparada com sucesso", "status_code", resp.StatusCode)
 	} else {
 		bodySnippet, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
-		log.Printf("[Webhook] Alerta: Webhook retornou status HTTP %d. Resposta: %s", resp.StatusCode, strings.TrimSpace(string(bodySnippet)))
+		slog.Warn("Webhook retornou status HTTP de erro",
+			"status_code", resp.StatusCode,
+			"response_snippet", strings.TrimSpace(string(bodySnippet)),
+		)
 	}
 }
 
@@ -197,16 +270,17 @@ func loadAccounts() []AccountConfig {
 		if data, err := os.ReadFile("accounts.json"); err == nil {
 			var accounts []AccountConfig
 			if err := json.Unmarshal(data, &accounts); err == nil && len(accounts) > 0 {
-				log.Printf("--- Modo Multi-Contas Ativado (%d conta(s) em accounts.json) ---", len(accounts))
+				slog.Info("Modo multi-contas ativado", "accounts_count", len(accounts))
 				return accounts
 			}
 		}
 	}
 
-	log.Println("--- Modo Conta Única Ativado (.env) ---")
+	slog.Info("Modo conta única ativado")
 	tenancyID := getEnv("TENANCY_ID", "")
 	if tenancyID == "" {
-		log.Fatal("[ERRO CRÍTICO] TENANCY_ID não definido no .env e nenhuma conta configurada em accounts.json.")
+		slog.Error("TENANCY_ID não definido no .env e nenhuma conta configurada em accounts.json")
+		os.Exit(1)
 	}
 
 	return []AccountConfig{
@@ -283,7 +357,10 @@ func getADs(ctx context.Context, cs *ClientSet, tenancyID, profile, fallbackAD s
 			return ads
 		}
 	} else if err != nil {
-		log.Printf("Aviso: não foi possível listar ADs dinamicamente para '%s': %v", profile, err)
+		slog.Warn("Não foi possível listar Availability Domains dinamicamente",
+			"profile", profile,
+			"error", err.Error(),
+		)
 	}
 
 	if fallbackAD != "" {
@@ -293,8 +370,8 @@ func getADs(ctx context.Context, cs *ClientSet, tenancyID, profile, fallbackAD s
 }
 
 func main() {
-	log.SetFlags(log.Ldate | log.Ltime)
 	loadEnv(".env")
+	initLogger()
 
 	configFilePath := getEnv("OCI_CONFIG_FILE", "/root/.oci/config")
 	requestInterval := getEnvInt("requestInterval", 60)
@@ -306,9 +383,7 @@ func main() {
 
 	for {
 		cycle++
-		log.Println("================================================================================")
-		log.Printf("Iniciando ciclo de tentativas #%d", cycle)
-		log.Println("================================================================================")
+		slog.Info("Iniciando ciclo de tentativas", "cycle", cycle)
 
 		allDone := true
 
@@ -363,13 +438,13 @@ func main() {
 
 			cs, err := getClients(configFilePath, profile)
 			if err != nil {
-				log.Printf("[!] Pulando conta '%s' devido a erro nas credenciais: %v", profile, err)
+				slogError("Pulando conta devido a erro nas credenciais", err, "profile", profile)
 				continue
 			}
 
 			ads := getADs(ctx, cs, tenancyID, profile, fallbackAD)
 			if len(ads) == 0 {
-				log.Printf("[!] Nenhum Availability Domain encontrado para a conta '%s'.", profile)
+				slog.Warn("Nenhum Availability Domain encontrado", "profile", profile)
 				continue
 			}
 
@@ -380,9 +455,13 @@ func main() {
 			}
 
 			for _, ad := range ads {
-				log.Printf(
-					"[Ciclo #%d] [Conta: %s] Tentando no AD: %s (%.1f OCPUs, %.1fGB RAM, %dGB Disco)...",
-					cycle, profile, ad, cpus, ram, bootVolume,
+				slog.Info("Tentando criar instância",
+					"cycle", cycle,
+					"profile", profile,
+					"availability_domain", ad,
+					"cpus", cpus,
+					"ram_gb", ram,
+					"boot_volume_gb", bootVolume,
 				)
 
 				launchReq := core.LaunchInstanceRequest{
@@ -413,7 +492,11 @@ func main() {
 					if resp.Instance.Id != nil {
 						instanceID = *resp.Instance.Id
 					}
-					log.Printf("🎉 [SUCESSO] Instância criada com sucesso para a conta '%s' no AD '%s'! ID: %s", profile, ad, instanceID)
+					slog.Info("Instância criada com sucesso",
+						"profile", profile,
+						"availability_domain", ad,
+						"instance_id", instanceID,
+					)
 					successAccounts[profile] = true
 					sendNotification(fmt.Sprintf(
 						"🎉 Instância ARM criada com sucesso na Oracle Cloud!\nConta: %s\nAD: %s\nNome: %s\nHardware: %.0f OCPUs, %.0fGB RAM, %dGB Disco",
@@ -427,27 +510,42 @@ func main() {
 					statusCode := servErr.GetHTTPStatusCode()
 					lowerMsg := strings.ToLower(servErr.GetMessage())
 					if strings.Contains(lowerMsg, "out of host capacity") || statusCode == 500 {
-						log.Printf("[X] Sem capacidade no momento no AD '%s'.", ad)
+						slog.Info("Sem capacidade no momento",
+							"profile", profile,
+							"availability_domain", ad,
+							"status_code", statusCode,
+						)
 					} else if statusCode == 429 {
-						log.Printf("[!] Rate Limit atingido (HTTP 429 Too Many Requests) no AD '%s'.", ad)
+						slog.Warn("Rate limit atingido",
+							"profile", profile,
+							"availability_domain", ad,
+							"status_code", statusCode,
+						)
 					} else {
-						log.Printf("[!] Erro na API OCI [%d - %s]: %s", statusCode, servErr.GetCode(), servErr.GetMessage())
+						slog.Error("Erro na API OCI",
+							"profile", profile,
+							"availability_domain", ad,
+							"status_code", statusCode,
+							"oci_code", servErr.GetCode(),
+							"error", servErr.GetMessage(),
+						)
 					}
 				} else {
-					log.Printf("Erro inesperado no AD '%s': %v", ad, err)
+					slogError("Erro inesperado ao criar instância", err,
+						"profile", profile,
+						"availability_domain", ad,
+					)
 				}
 			}
 		}
 
 		if allDone {
-			log.Println("================================================================================")
-			log.Println("Todas as instâncias solicitadas foram criadas com sucesso! Encerrando.")
-			log.Println("================================================================================")
+			slog.Info("Todas as instâncias solicitadas foram criadas com sucesso")
 			sendNotification("🏁 Todas as instâncias ARM solicitadas foram criadas com sucesso na Oracle Cloud!")
 			os.Exit(0)
 		}
 
-		log.Printf("Aguardando %d segundos antes do próximo ciclo...", requestInterval)
+		slog.Info("Aguardando próximo ciclo", "interval_seconds", requestInterval)
 		time.Sleep(time.Duration(requestInterval) * time.Second)
 	}
 }

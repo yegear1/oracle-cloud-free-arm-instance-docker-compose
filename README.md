@@ -167,11 +167,13 @@ To view the logs in real time:
 docker compose logs -f
 ```
 
-**Log indicators:**
-* `[Ciclo #X] [Conta: PROFILE] Tentando no AD: AD_NAME`: Real-time creation attempt in specified Availability Domain.
-* `[X] Sem capacidade no momento no AD 'AD_NAME'`: Expected behavior when host capacity is full. Retries automatically on next cycle.
-* `[!] Rate Limit atingido (HTTP 429 Too Many Requests)`: Rate limit detected; bot pauses safely until next cycle.
-* `🎉 [SUCESSO] Instância criada com sucesso para a conta 'PROFILE' no AD 'AD_NAME'! ID: ocid1...`: Instance provisioned and webhook alert dispatched!
+Logs are one JSON object per line on stdout (`timestamp`, `level`, `service`, `app`, `env`, `message`). High-cardinality IDs such as `instance_id` are event fields, not stream dimensions.
+
+**Log messages:**
+* `Tentando criar instância`: Real-time creation attempt (`cycle`, `profile`, `availability_domain`).
+* `Sem capacidade no momento`: Expected behavior when host capacity is full. Retries automatically on next cycle.
+* `Rate limit atingido`: Rate limit detected; bot pauses safely until next cycle.
+* `Instância criada com sucesso`: Instance provisioned (`instance_id`) and webhook alert dispatched.
 
 ### Stopping the Script
 ```bash

@@ -8,5 +8,13 @@ services:
       - ./accounts.json:/app/accounts.json
       - ./oci_keys:/root/.oci
     environment:
-      - PYTHONUNBUFFERED=1
-      - OCI_CLI_SUPPRESS_FILE_PERMISSIONS_WARNING=True
+      LOG_FORMAT: "json"
+      NO_COLOR: "1"
+      APP_ENV: "production"
+      LOG_LEVEL: "info"
+      OCI_CLI_SUPPRESS_FILE_PERMISSIONS_WARNING: "True"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
