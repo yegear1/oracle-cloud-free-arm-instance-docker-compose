@@ -1,6 +1,6 @@
 # Oracle Cloud Free ARM Instance Creator (Dockerized)
 
-This project automates the creation of Always Free ARM instances (up to 4 CPUs, 24GB RAM) on Oracle Cloud Infrastructure (OCI). Built in **Go (Golang)** with the official **Oracle OCI Go SDK**, it achieves maximum efficiency: a compiled static binary running in an ultra-lightweight ~20MB container using only **~6MB of RAM**, with persistent HTTP Keep-Alive connections and ~50ms request latency.
+This project automates the creation of Always Free ARM instances (up to 2 OCPUs, 12GB RAM) on Oracle Cloud Infrastructure (OCI). Built in **Go (Golang)** with the official **Oracle OCI Go SDK**, it achieves maximum efficiency: a compiled static binary running in an ultra-lightweight ~20MB container using only **~6MB of RAM**, with persistent HTTP Keep-Alive connections and ~50ms request latency.
 
 Due to high demand, creating ARM instances often results in an *Out of host capacity* error. This bot runs continuously in the background, attempting to create the instance across all available Availability Domains (ADs) until slots become available.
 
@@ -95,9 +95,9 @@ PATH_TO_PUBLIC_SSH_KEY="/root/.oci/chave_vps_arm.pub"
 # Optional fallback (ADs are discovered automatically via OCI API)
 # AVAILABILITY_DOMAIN="Uocm:SA-SAOPAULO-1-AD-1"
 
-# Hardware resources (Always Free Tier limits)
-cpus=4
-ram=24
+# Hardware resources (Always Free Ampere A1: 2 OCPUs, 12GB RAM)
+cpus=2
+ram=12
 bootVolume=100
 requestInterval=60
 ```
@@ -115,8 +115,8 @@ cp accounts.json.example accounts.json
     "image_id": "ocid1.image.oc1.sa-saopaulo-1...",
     "subnet_id": "ocid1.subnet.oc1.sa-saopaulo-1...",
     "ssh_key": "/root/.oci/chave_vps_arm.pub",
-    "cpus": 4,
-    "ram": 24,
+    "cpus": 2,
+    "ram": 12,
     "boot_volume": 100,
     "display_name": "arm-instance-acc1"
   },
@@ -126,8 +126,8 @@ cp accounts.json.example accounts.json
     "image_id": "ocid1.image.oc1.sa-vinhedo-1...",
     "subnet_id": "ocid1.subnet.oc1.sa-vinhedo-1...",
     "ssh_key": "/root/.oci/chave_vps_arm.pub",
-    "cpus": 4,
-    "ram": 24,
+    "cpus": 2,
+    "ram": 12,
     "boot_volume": 100,
     "display_name": "arm-instance-acc2"
   }

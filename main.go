@@ -20,8 +20,9 @@ import (
 )
 
 const (
-	serviceName = "oracle-fisher"
-	appName     = "oracle-fisher"
+	// Alinhado a container_name no docker-compose (stream field no Vector).
+	serviceName = "oracle_fisher"
+	appName     = "oracle_fisher"
 )
 
 // AccountConfig representa os parâmetros de uma conta OCI.
@@ -153,7 +154,7 @@ func initLogger() {
 			case slog.TimeKey:
 				a.Key = "timestamp"
 				if t, ok := a.Value.Any().(time.Time); ok {
-					a.Value = slog.StringValue(t.UTC().Format("2006-01-02T15:04:05.000Z"))
+					a.Value = slog.StringValue(t.UTC().Format("2006-01-02T15:04:05.000000000Z"))
 				}
 			}
 			return a
@@ -290,8 +291,8 @@ func loadAccounts() []AccountConfig {
 			ImageID:            getEnv("IMAGE_ID", ""),
 			SubnetID:           getEnv("SUBNET_ID", ""),
 			SSHKey:             getEnv("PATH_TO_PUBLIC_SSH_KEY", "/root/.oci/chave_vps_arm.pub"),
-			CPUs:               getEnvFloat("cpus", 4),
-			RAM:                getEnvFloat("ram", 24),
+			CPUs:               getEnvFloat("cpus", 2),
+			RAM:                getEnvFloat("ram", 12),
 			BootVolume:         getEnvInt("bootVolume", 100),
 			DisplayName:        getEnv("DISPLAY_NAME", "big-arm"),
 			AvailabilityDomain: getEnv("AVAILABILITY_DOMAIN", ""),
@@ -383,7 +384,7 @@ func main() {
 
 	for {
 		cycle++
-		slog.Info("Iniciando ciclo de tentativas", "cycle", cycle)
+		slog.Debug("Iniciando ciclo de tentativas", "cycle", cycle)
 
 		allDone := true
 
@@ -417,11 +418,11 @@ func main() {
 			}
 			cpus := acc.CPUs
 			if cpus == 0 {
-				cpus = getEnvFloat("cpus", 4)
+				cpus = getEnvFloat("cpus", 2)
 			}
 			ram := acc.RAM
 			if ram == 0 {
-				ram = getEnvFloat("ram", 24)
+				ram = getEnvFloat("ram", 12)
 			}
 			bootVolume := acc.BootVolume
 			if bootVolume == 0 {
@@ -545,7 +546,7 @@ func main() {
 			os.Exit(0)
 		}
 
-		slog.Info("Aguardando próximo ciclo", "interval_seconds", requestInterval)
+		slog.Debug("Aguardando próximo ciclo", "interval_seconds", requestInterval)
 		time.Sleep(time.Duration(requestInterval) * time.Second)
 	}
 }
