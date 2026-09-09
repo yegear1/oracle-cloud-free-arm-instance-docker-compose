@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"runtime/debug"
@@ -20,8 +22,10 @@ import (
 )
 
 const (
-	serviceName = "oracle-fisher"
-	appName     = "oracle-fisher"
+	serviceName            = "oracle-fisher"
+	appName                = "oracle-fisher"
+	launchNetworkAttempts  = 3
+	launchRetryBackoffUnit = 2 * time.Second
 )
 
 // AccountConfig representa os parâmetros de uma conta OCI.
@@ -171,6 +175,26 @@ func slogError(msg string, err error, args ...any) {
 		args = append(args, "error", err.Error(), "stack_trace", strings.TrimSpace(string(debug.Stack())))
 	}
 	slog.Error(msg, args...)
+}
+
+// isTransientNetworkError identifica falha de transporte (dial/timeout) antes de um ServiceError da OCI.
+func isTransientNetworkError(err error) bool {
+	if err == nil {
+		return false
+	}
+	if _, ok := common.IsServiceError(err); ok {
+		return false
+	}
+	var netErr net.Error
+	if errors.As(err, &netErr) && netErr.Timeout() {
+		return true
+	}
+	msg := strings.ToLower(err.Error())
+	return strings.Contains(msg, "i/o timeout") ||
+		strings.Contains(msg, "timeout exceeded") ||
+		strings.Contains(msg, "connection reset") ||
+		strings.Contains(msg, "connection refused") ||
+		strings.Contains(msg, "tls handshake timeout")
 }
 
 // sendNotification dispara notificações via webhook HTTP (WhatsApp API, Discord, Slack, etc.).
@@ -486,7 +510,26 @@ func main() {
 					},
 				}
 
-				resp, err := cs.Compute.LaunchInstance(ctx, launchReq)
+				var resp core.LaunchInstanceResponse
+				var err error
+				for attempt := 1; attempt <= launchNetworkAttempts; attempt++ {
+					resp, err = cs.Compute.LaunchInstance(ctx, launchReq)
+					if err == nil {
+						break
+					}
+					if attempt < launchNetworkAttempts && isTransientNetworkError(err) {
+						slog.Warn("Timeout de rede ao criar instância; nova tentativa no mesmo ciclo",
+							"profile", profile,
+							"availability_domain", ad,
+							"attempt", attempt,
+							"max_attempts", launchNetworkAttempts,
+							"error", err.Error(),
+						)
+						time.Sleep(time.Duration(attempt) * launchRetryBackoffUnit)
+						continue
+					}
+					break
+				}
 				if err == nil {
 					instanceID := "OK"
 					if resp.Instance.Id != nil {
