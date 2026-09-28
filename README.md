@@ -81,9 +81,9 @@ ssh-keygen -t rsa -b 4096 -f ./oci_keys/chave_vps_arm
 You can configure the project in one of two modes:
 
 #### Option A: Single Account (via `.env`)
-Copy `.env.example` to `.env` and edit with your specific Oracle Cloud IDs (OCIDs):
+Copy `examples/.env.example` to `.env` in the project root and edit with your specific Oracle Cloud IDs (OCIDs):
 ```bash
-cp .env.example .env
+cp examples/.env.example .env
 ```
 
 ```bash
@@ -103,9 +103,9 @@ requestInterval=60
 ```
 
 #### Option B: Multiple Accounts (via `accounts.json`)
-Copy `accounts.json.example` to `accounts.json` and configure your accounts list:
+Copy `examples/accounts.json.example` to `accounts.json` in the project root and configure your accounts list:
 ```bash
-cp accounts.json.example accounts.json
+cp examples/accounts.json.example accounts.json
 ```
 ```json
 [
@@ -186,22 +186,22 @@ docker compose down
 
 ```plaintext
 .
-├── docker-compose.yml       # Docker Compose orchestration
-├── Dockerfile               # Multi-stage production Dockerfile (Go static binary -> ~20MB image)
-├── go.mod                   # Go module definition (oci-go-sdk v65)
-├── main.go                  # Core Go engine with OCI SDK & Keep-Alive
-├── accounts.json.example    # Multi-account configuration template
-├── .env.example             # Environment variables and webhook settings template
-├── .gitignore               # Ignores active .env, accounts.json, keys and build artifacts
-├── AGENTS.md                # Context and guidelines for AI agents
-├── LICENSE                  # License file
-├── oci_keys/                # Mounted volume for credentials
-│   ├── config               # OCI CLI/SDK credentials (with profiles)
-│   ├── oracle_api_key.pem   # API Private Key
-│   ├── chave_vps_arm        # SSH Private Key
-│   └── chave_vps_arm.pub    # SSH Public Key
-└── assets/                  # Media & screenshots
-    └── screenshot.png
+├── cmd/oracle-fisher/main.go          # Launch loop entrypoint
+├── internal/config/                   # .env and accounts.json
+├── internal/oci/                      # OCI clients, ADs, SSH public key
+├── internal/notify/                   # Webhook notifications
+├── internal/logging/                  # NDJSON stdout logger
+├── examples/.env.example              # Copy to ./.env
+├── examples/accounts.json.example     # Copy to ./accounts.json
+├── docker-compose.yml                 # Mounts ./.env, ./accounts.json, ./oci_keys
+├── Dockerfile                         # Multi-stage static binary -> ~20MB image
+├── go.mod                             # Module oracle-fisher (oci-go-sdk v65)
+├── oci_keys/                          # Mounted credentials (/root/.oci)
+│   ├── config
+│   ├── oracle_api_key.pem
+│   ├── chave_vps_arm
+│   └── chave_vps_arm.pub
+└── assets/screenshot.png
 ```
 
 ## Credits

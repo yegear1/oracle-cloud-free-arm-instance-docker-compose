@@ -20,14 +20,32 @@ O projeto evoluiu para o **ápice de eficiência e performance**, implementado e
 
 ## 2. O que o Agente Precisa Saber para Iniciar
 
+### Layout
+```text
+cmd/oracle-fisher/main.go   loop de tentativas (entrypoint)
+internal/config/            .env, accounts.json, AccountConfig
+internal/oci/               clientes OCI, ADs, chave SSH
+internal/notify/            webhook
+internal/logging/           NDJSON stdout (slog)
+examples/                   .env.example, accounts.json.example
+oci_keys/                   config OCI, .pem e chaves SSH (montado em /root/.oci)
+assets/                     capturas de tela
+```
+
+Arquivos de runtime (`.env`, `accounts.json`) ficam na raiz: o Compose monta esses caminhos. Templates ficam em `examples/`.
+
 ### Arquitetura e Componentes Principais
-- **`main.go`**: Aplicação principal em Go com `oci-go-sdk`. Gerencia conexões persistentes, descoberta dinâmica de Availability Domains (ADs), loop de tentativas e notificações.
-- **`go.mod`**: Gerenciamento de dependências Go (`github.com/oracle/oci-go-sdk/v65`).
-- **`Dockerfile`**: Build multi-stage compilando o binário estático em `golang:1.22-alpine` e gerando imagem final ultraleve em `alpine:3.20`.
-- **`docker-compose.yml`**: Orquestra o container `oracle_fisher`, montando `.env`, `accounts.json` e o diretório de credenciais `./oci_keys` em `/root/.oci`.
-- **`accounts.json.example`**: Modelo de exemplo para configuração multi-contas (copiar para `accounts.json`).
-- **`.env.example`**: Modelo de configuração geral e webhooks (copiar para `.env`).
-- **`oci_keys/`**: Diretório montado contendo `config`, chaves `.pem` de API e chaves SSH.
+- **`cmd/oracle-fisher/main.go`**: Entrypoint. Descobre ADs e executa o loop de criação.
+- **`internal/config`**: Leitura de `.env` e `accounts.json`.
+- **`internal/oci`**: Clientes Keep-Alive, listagem de Availability Domains e leitura da chave SSH pública.
+- **`internal/notify`**: Webhook HTTP (WhatsApp, Discord, Slack ou endpoint genérico).
+- **`internal/logging`**: Logger NDJSON (`log/slog`) com campos `timestamp`, `level`, `service`, `app`, `env`, `message`.
+- **`go.mod`**: Módulo `oracle-fisher` (`github.com/oracle/oci-go-sdk/v65`).
+- **`Dockerfile`**: Build multi-stage (`golang:1.22-alpine` → binário estático → `alpine:3.20`).
+- **`docker-compose.yml`**: Serviço `oracle_fisher`. Monta `./.env`, `./accounts.json` e `./oci_keys` em `/root/.oci`.
+- **`examples/accounts.json.example`**: Template multi-contas. Copiar para `./accounts.json`.
+- **`examples/.env.example`**: Template de OCIDs e webhook. Copiar para `./.env`.
+- **`oci_keys/`**: Credenciais montadas no container. Não mover: o volume do Compose aponta para este diretório.
 - **`assets/`**: Imagens e capturas de tela.
 
 ### Logging (produção)
