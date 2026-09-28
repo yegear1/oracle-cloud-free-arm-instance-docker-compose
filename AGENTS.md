@@ -34,6 +34,11 @@ assets/                     capturas de tela
 
 Arquivos de runtime (`.env`, `accounts.json`) ficam na raiz: o Compose monta esses caminhos. Templates ficam em `examples/`.
 
+### Documentação
+- **`README.md`**: README padrão do repositório (inglês). O GitHub exibe este arquivo. Manter como fonte default; não substituir pelo texto em português.
+- **`README.pt-BR.md`**: Versão em português do Brasil, espelhando a estrutura e o conteúdo do `README.md`.
+- Ao alterar a documentação de uso, atualizar os dois arquivos no mesmo change. Comandos, nomes de variáveis, caminhos e mensagens de log permanecem literais.
+
 ### Arquitetura e Componentes Principais
 - **`cmd/oracle-fisher/main.go`**: Entrypoint. Descobre ADs e executa o loop de criação.
 - **`internal/config`**: Leitura de `.env` e `accounts.json`.
@@ -77,3 +82,4 @@ Ao emitir ou alterar logs, seguir a skill `victorialogs-integration` em `ye-sand
 - [x] Atualizar documentação no `README.md` e finalizar checklist no `AGENTS.md`.
 - [x] Unificar repositório 100% em Go, remover runtimes legados e proteger secrets no `.gitignore`.
 - [x] Emitir logs de produção em NDJSON (`log/slog`) alinhados à skill `victorialogs-integration`.
+- [x] Manter `README.md` em inglês como default e publicar `README.pt-BR.md`.

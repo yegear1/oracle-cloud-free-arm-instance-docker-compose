@@ -1,3 +1,5 @@
+[English](README.md) | [Português (Brasil)](README.pt-BR.md)
+
 # Oracle Cloud Free ARM Instance Creator (Dockerized)
 
 This project automates the creation of Always Free ARM instances (up to 2 OCPUs, 12GB RAM) on Oracle Cloud Infrastructure (OCI). Built in **Go (Golang)** with the official **Oracle OCI Go SDK**, it achieves maximum efficiency: a compiled static binary running in an ultra-lightweight ~20MB container using only **~6MB of RAM**, with persistent HTTP Keep-Alive connections and ~50ms request latency.
