@@ -54,7 +54,7 @@ Arquivos de runtime (`.env`, `accounts.json`) ficam na raiz: o Compose monta ess
 - **`assets/`**: Imagens e capturas de tela.
 
 ### Logging (produção)
-Ao emitir ou alterar logs, seguir a skill `victorialogs-integration` em `ye-sandbox/infra-victoria-logs/skills/victorialogs-integration` (descoberta local via `~/.cursor/skills/victorialogs-integration`). Não copiar essa skill para este repositório.
+Os logs de produção são emitidos em formato NDJSON (`log/slog`) no `stdout`, estruturados com campos canônicos (`timestamp`, `level`, `service`, `app`, `env`, `message`), compatíveis com agregadores modernos como VictoriaLogs, Vector ou FluentBit.
 
 ### Comandos de Operação
 - Iniciar em background: `docker compose up -d --build`
@@ -81,5 +81,6 @@ Ao emitir ou alterar logs, seguir a skill `victorialogs-integration` em `ye-sand
 - [x] Configurar build multi-stage no `Dockerfile` para gerar imagem Go ultraleve (~20MB).
 - [x] Atualizar documentação no `README.md` e finalizar checklist no `AGENTS.md`.
 - [x] Unificar repositório 100% em Go, remover runtimes legados e proteger secrets no `.gitignore`.
-- [x] Emitir logs de produção em NDJSON (`log/slog`) alinhados à skill `victorialogs-integration`.
+- [x] Emitir logs de produção em NDJSON (`log/slog`) alinhados às boas práticas de observabilidade.
 - [x] Manter `README.md` em inglês como default e publicar `README.pt-BR.md`.
+- [x] Adequar repositório para Open Source (governança, templates, isolamento de chaves e testes unitários).

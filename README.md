@@ -38,8 +38,11 @@ All credentials must be placed inside the `oci_keys` directory located in the pr
 6. Copy the content displayed in the "Configuration File Preview" text box.
 
 #### Step B: Config File
-1. Create or edit `oci_keys/config` (no file extension).
-2. Paste the OCI configuration snippet. Ensure the `key_file` points to the container path `/root/.oci/...`.
+1. Copy the example configuration template or create `oci_keys/config` (no file extension):
+   ```bash
+   cp oci_keys/config.example oci_keys/config
+   ```
+2. Paste your OCI configuration snippet. Ensure the `key_file` points to the container path `/root/.oci/...`.
 
 **Single-Account example (`[DEFAULT]`):**
 ```ini
@@ -199,12 +202,15 @@ docker compose down
 ├── Dockerfile                         # Multi-stage static binary -> ~20MB image
 ├── go.mod                             # Module oracle-fisher (oci-go-sdk v65)
 ├── oci_keys/                          # Mounted credentials (/root/.oci)
-│   ├── config
-│   ├── oracle_api_key.pem
-│   ├── chave_vps_arm
-│   └── chave_vps_arm.pub
+│   ├── config.example
+│   ├── oracle_api_key.pem.example
+│   └── chave_vps_arm.pub.example
 └── assets/screenshot.png
 ```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Credits
 Based on the original work by futchas and maindust.

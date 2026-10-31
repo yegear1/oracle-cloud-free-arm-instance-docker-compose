@@ -38,7 +38,10 @@ Todas as credenciais ficam no diretório `oci_keys`, na raiz do projeto.
 6. Copie o conteúdo exibido na caixa "Configuration File Preview".
 
 #### Passo B: Arquivo de configuração
-1. Crie ou edite `oci_keys/config` (sem extensão).
+1. Copie o modelo de configuração de exemplo ou crie `oci_keys/config` (sem extensão):
+   ```bash
+   cp oci_keys/config.example oci_keys/config
+   ```
 2. Cole o trecho de configuração da OCI. O `key_file` deve apontar para o caminho do contêiner `/root/.oci/...`.
 
 **Exemplo de conta única (`[DEFAULT]`):**
@@ -199,12 +202,15 @@ docker compose down
 ├── Dockerfile                         # Binário estático multi-stage -> imagem ~20 MB
 ├── go.mod                             # Módulo oracle-fisher (oci-go-sdk v65)
 ├── oci_keys/                          # Credenciais montadas (/root/.oci)
-│   ├── config
-│   ├── oracle_api_key.pem
-│   ├── chave_vps_arm
-│   └── chave_vps_arm.pub
+│   ├── config.example
+│   ├── oracle_api_key.pem.example
+│   └── chave_vps_arm.pub.example
 └── assets/screenshot.png
 ```
+
+## Licença
+
+Este projeto está licenciado sob a Licença MIT - consulte o arquivo [LICENSE](LICENSE) para obter detalhes.
 
 ## Créditos
 Baseado no trabalho original de futchas e maindust.

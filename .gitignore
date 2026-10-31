@@ -5,11 +5,11 @@
 accounts.json
 
 # ==============================================================================
-# OCI Private Keys (prevents accidental credential commits)
+# OCI Credentials & Keys (prevents accidental credential commits)
 # ==============================================================================
-oci_keys/*.pem
-!oci_keys/oracle_api_key.pem
-oci_keys/*_private*
+oci_keys/*
+!oci_keys/.gitkeep
+!oci_keys/*.example
 
 # ==============================================================================
 # Compiled Binaries & Build Artifacts
